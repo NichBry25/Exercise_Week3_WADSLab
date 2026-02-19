@@ -53,6 +53,11 @@ export default function LoginPage() {
 
   const handleEmailLogin = async () => {
     try {
+      if (!email || !password) {
+        toast.error("Email and password are required");
+        return;
+      }
+
       setLoading(true);
 
       const result = await signInWithEmailAndPassword(auth, email, password);
@@ -72,9 +77,13 @@ export default function LoginPage() {
       if (error.code === "auth/user-not-found") {
         message = "User not found";
       } else if (error.code === "auth/wrong-password") {
-        message = "wrong password";
+        message = "Incorrect password";
       } else if (error.code === "auth/invalid-email") {
-        message = "invalid email format";
+        message = "Invalid email format";
+      } else if (error.code === "auth/invalid-credential") {
+        message = "Invalid email or password";
+      } else if (error.code === "auth/operation-not-allowed") {
+        message = "Email/password sign-in is disabled";
       }
 
       toast.error(message);

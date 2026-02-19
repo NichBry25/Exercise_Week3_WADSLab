@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   let decodedToken;
 
   try {
-    decodedToken = await adminAuth.verifyIdToken(session, true);
+    decodedToken = await adminAuth.verifySessionCookie(session, true);
   } catch {
     redirect("/login");
   }
@@ -45,15 +45,6 @@ export default async function DashboardPage() {
               <p>
                 <strong>Email Verified:</strong> {decodedToken.email_verified ? "Yes" : "No"}
               </p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle>Welcome</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Successfully login using firebase auth</p>
             </CardContent>
           </Card>
         </div>
