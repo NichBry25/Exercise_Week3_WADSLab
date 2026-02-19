@@ -10,15 +10,25 @@ export async function POST(req: NextRequest) {
 
   const idToken = authorization.split("Bearer ")[1];
 
-  await adminAuth.verifyIdToken(idToken, true);
+  try {
+    await adminAuth.verifyIdToken(idToken, true);
 
-  const response = NextResponse.json({ status: "success" });
+    const expiresIn = 1000 * 60 * 60 * 24 * 5;
+    const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
 
-  response.cookies.set("session", idToken, {
-    httpOnly: true,
-    secure: true,
-    path: "/",
-  });
+    const response = NextResponse.json({ status: "success" });
 
-  return response;
+    response.cookies.set("session", sessionCookie, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: Math.floor(expiresIn / 1000),
+      path: "/",
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Session creation failed", error);
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 }
