@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -24,11 +25,19 @@ export default function LogoutButton() {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/logout", {
-        method: "POST",
-      });
+      const results = await Promise.allSettled([
+        authClient.signOut(),
+        fetch("/api/logout", {
+          method: "POST",
+        }).then((res) => {
+          if (!res.ok) throw new Error("Logout failed");
+        }),
+      ]);
 
-      if (!res.ok) throw new Error("Logout failed");
+      const failed = results.filter((result) => result.status === "rejected");
+      if (failed.length === results.length) {
+        throw new Error("Logout failed");
+      }
 
       toast.success("logout success");
 
@@ -44,7 +53,9 @@ export default function LogoutButton() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Logout</Button>
+        <Button variant="destructive" className="h-9 px-4 text-sm">
+          Log out
+        </Button>
       </AlertDialogTrigger>
 
       <AlertDialogContent>
